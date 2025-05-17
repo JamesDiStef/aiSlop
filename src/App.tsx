@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./App.css";
 import { useQuery } from "@tanstack/react-query";
+import GoogleMapsTable from "./GoogleMapsTable";
 
 interface Post {
   id: number;
@@ -133,6 +134,10 @@ function App() {
             ▶
           </button>
         </div>
+      </div>
+      <div className="mt-8 w-96">
+        <h2 className="text-2xl font-bold mb-4">Google Maps Data</h2>
+        <GoogleMapsTable />
       </div>
       <footer className="mt-8">
         <a
