@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 
 interface Place {
   place_id: string;
@@ -7,49 +8,58 @@ interface Place {
   rating?: number;
 }
 
-const GoogleMapsTable = () => {
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const loadGoogleMapsAPI = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (window.google && window.google.maps) {
+      resolve();
+      return;
+    }
 
-  useEffect(() => {
-    const loadGoogleMapsAPI = () => {
-      const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=REPLACE_WITH_YOUR_VALID_API_KEY&libraries=places`;
-      script.async = true;
-      script.onload = () => initPlacesService();
-      script.onerror = () => setError("Failed to load Google Maps API");
-      document.body.appendChild(script);
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=REPLACE_WITH_YOUR_VALID_API_KEY&libraries=places`;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject("Failed to load Google Maps API");
+    document.body.appendChild(script);
+  });
+};
+
+const fetchPlaces = async (): Promise<Place[]> => {
+  await loadGoogleMapsAPI();
+
+  return new Promise((resolve, reject) => {
+    const service = new google.maps.places.PlacesService(document.createElement("div"));
+    const request = {
+      location: new google.maps.LatLng(37.7749, -122.4194),
+      radius: 1500,
+      type: "restaurant",
     };
 
-    const initPlacesService = () => {
-      const service = new google.maps.places.PlacesService(document.createElement("div"));
-      const request = {
-        location: new google.maps.LatLng(37.7749, -122.4194),
-        radius: 1500,
-        type: "restaurant",
-      };
-
-      service.nearbySearch(request, (results, status) => {
-        if (status === google.maps.places.PlacesServiceStatus.OK) {
-          setPlaces(results.map((place) => ({
+    service.nearbySearch(request, (results, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK) {
+        resolve(
+          results.map((place) => ({
             place_id: place.place_id,
             name: place.name,
             vicinity: place.vicinity,
             rating: place.rating,
-          })));
-        } else {
-          setError("Failed to fetch places: " + status);
-        }
-        setIsLoading(false);
-      });
-    };
+          }))
+        );
+      } else {
+        reject("Failed to fetch places: " + status);
+      }
+    });
+  });
+};
 
-    loadGoogleMapsAPI();
-  }, []);
+const GoogleMapsTable = () => {
+  const { data: places = [], isLoading, error } = useQuery({
+    queryKey: ["googleMapsPlaces"],
+    queryFn: fetchPlaces,
+  });
 
   if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (error instanceof Error) return <p>Error: {error.message}</p>;
 
   return (
     <table className="table-auto border-collapse border border-gray-400">
