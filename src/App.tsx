@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import './App.css';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from "react";
+import "./App.css";
+import { useQuery } from "@tanstack/react-query";
 
 interface Post {
   id: number;
@@ -10,34 +10,38 @@ interface Post {
 
 const robots = [
   {
-    name: 'ASIMO',
-    image: '/asimo.jpg',
-    link: 'https://en.wikipedia.org/wiki/ASIMO',
+    name: "ASIMO",
+    image: "/asimo.jpg",
+    link: "https://en.wikipedia.org/wiki/ASIMO",
   },
   {
-    name: 'Atlas',
-    image: '/atlas.jpg',
-    link: 'https://en.wikipedia.org/wiki/Atlas_(robot)',
+    name: "Atlas",
+    image: "/atlas.jpg",
+    link: "https://en.wikipedia.org/wiki/Atlas_(robot)",
   },
   {
-    name: 'Spot',
-    image: '/spot.jpg',
-    link: 'https://en.wikipedia.org/wiki/Spot_(robot)',
+    name: "Spot",
+    image: "/spot.jpg",
+    link: "https://en.wikipedia.org/wiki/Spot_(robot)",
   },
 ];
 
 const fetchPosts = async (): Promise<Post[]> => {
-  const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+  const response = await fetch("https://jsonplaceholder.typicode.com/posts");
   if (!response.ok) {
-    throw new Error('Network response was not ok');
+    throw new Error("Network response was not ok");
   }
   return response.json();
 };
 
 function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { data: posts = [], isLoading, error } = useQuery<Post[]>({
-    queryKey: ['posts'],
+  const {
+    data: posts = [],
+    isLoading,
+    error,
+  } = useQuery<Post[]>({
+    queryKey: ["posts"],
     queryFn: fetchPosts,
   });
 
@@ -57,7 +61,7 @@ function App() {
 
   const handlePrev = () => {
     setCurrentIndex((currentIndex - 1 + robots.length) % robots.length);
-    setCurrentPage((currentPage - 2 + totalPages) % totalPages + 1);
+    setCurrentPage(((currentPage - 2 + totalPages) % totalPages) + 1);
   };
 
   return (
